@@ -687,6 +687,16 @@ API (for read pools, effective_availability_type may differ from availability_ty
                                                                                                                                 Computed:     true,
                                                                                                                                 Description:  `The connection status of the consumer endpoint.`,
                                                                                                                         },
+                                                                                                                        "instance_auto_dns_status": {
+                                                                                                                                Type:         schema.TypeString,
+                                                                                                                                Computed:     true,
+                                                                                                                                Description:  `The status of automated DNS provisioning for the instance. Possible values are: AUTO_DNS_STATUS_UNSPECIFIED, AUTO_DNS_OK, AUTO_DNS_FAILED, AUTO_DNS_UNKNOWN.`,
+                                                                                                                        },
+                                                                                                                        "write_endpoint_auto_dns_status": {
+                                                                                                                                Type:         schema.TypeString,
+                                                                                                                                Computed:     true,
+                                                                                                                                Description:  `The status of automated DNS provisioning for the write endpoint. Possible values are: AUTO_DNS_STATUS_UNSPECIFIED, AUTO_DNS_OK, AUTO_DNS_FAILED, AUTO_DNS_UNKNOWN.`,
+                                                                                                                        },
                                                                                                                 },
 													},
 													Description: `A comma-separated list of networks or a comma-separated list of network-project pairs. Each project in this list is represented by a project number (numeric) or by a project ID (alphanumeric). This allows Private Service Connect connections to be created automatically for the specified networks.`,
@@ -3378,6 +3388,8 @@ func flattenPscAutoConnections(pscAutoConnections []*sqladmin.PscAutoConnectionC
                         "consumer_service_project_id":   flag.ConsumerProject,
                         "ip_address":   flag.IpAddress,
                         "status":   flag.Status,
+                        "instance_auto_dns_status": flag.InstanceAutoDnsStatus,
+                        "write_endpoint_auto_dns_status": flag.WriteEndpointAutoDnsStatus,
                 }
 
                 flags = append(flags, data)

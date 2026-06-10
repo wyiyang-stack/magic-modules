@@ -1336,6 +1336,8 @@ func TestAccSqlDatabaseInstance_pscDnsConfig(t *testing.T) {
 				Config: testAccSqlDatabaseInstance_withPSCDnsEnabled(instanceName, projectId),
 				Check: resource.ComposeTestCheckFunc(
 					verifyPscOperation("google_sql_database_instance.instance", true, true, []string{projectId}, true, true),
+					resource.TestCheckResourceAttrSet("google_sql_database_instance.instance", "settings.0.ip_configuration.0.psc_config.0.psc_auto_connections.0.instance_auto_dns_status"),
+					resource.TestCheckResourceAttrSet("google_sql_database_instance.instance", "settings.0.ip_configuration.0.psc_config.0.psc_auto_connections.0.write_endpoint_auto_dns_status"),
 				),
 			},
 			{
@@ -1360,6 +1362,7 @@ func TestAccSqlDatabaseInstance_pscDnsConfig(t *testing.T) {
 				Config: testAccSqlDatabaseInstance_withPSCOnlyAutoDnsEnabled(instanceName, projectId),
 				Check: resource.ComposeTestCheckFunc(
 					verifyPscOperation("google_sql_database_instance.instance", true, true, []string{projectId}, true, false),
+					resource.TestCheckResourceAttrSet("google_sql_database_instance.instance", "settings.0.ip_configuration.0.psc_config.0.psc_auto_connections.0.instance_auto_dns_status"),
 				),
 			},
 			{
