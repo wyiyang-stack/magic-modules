@@ -32,7 +32,7 @@ func (c *ContainerClusterCai2hclConverter) Convert(assets []caiasset.Asset, opti
 	}
 
 	var blocks []*models.TerraformResourceBlock
-	block, err := c.convertResourceData(assets[0])
+	block, err := c.convertResourceData(assets[0], options)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +40,7 @@ func (c *ContainerClusterCai2hclConverter) Convert(assets []caiasset.Asset, opti
 	return blocks, nil
 }
 
-func (c *ContainerClusterCai2hclConverter) convertResourceData(asset caiasset.Asset) (*models.TerraformResourceBlock, error) {
+func (c *ContainerClusterCai2hclConverter) convertResourceData(asset caiasset.Asset, options *models.ResourceConverterOptions) (*models.TerraformResourceBlock, error) {
 	if asset.Resource == nil || asset.Resource.Data == nil {
 		return nil, fmt.Errorf("asset resource data is nil")
 	}
@@ -173,6 +173,9 @@ func (c *ContainerClusterCai2hclConverter) convertResourceData(asset caiasset.As
 		}
 		hclData["private_ipv6_google_access"] = nc["privateIpv6GoogleAccess"]
 		hclData["datapath_provider"] = nc["datapathProvider"]
+		if dvc, ok := nc["dataplaneV2Config"].(map[string]interface{}); ok {
+			hclData["dataplane_optimization_mode"] = dvc["scalabilityMode"]
+		}
 		if v := nc["enableMultiNetworking"]; v != nil && v != false {
 			hclData["enable_multi_networking"] = v
 		}
@@ -233,8 +236,14 @@ func (c *ContainerClusterCai2hclConverter) convertResourceData(asset caiasset.As
 	}
 	// name is likely string, safe cast or fallback
 	name, _ := asset.Resource.Data["name"].(string)
+	var hclBlockName string
+	if options != nil && options.ResourceName != "" {
+		hclBlockName = options.ResourceName
+	} else {
+		hclBlockName = name
+	}
 	return &models.TerraformResourceBlock{
-		Labels: []string{c.name, name},
+		Labels: []string{c.name, hclBlockName},
 		Value:  ctyVal,
 	}, nil
 }
@@ -634,6 +643,19 @@ func flattenClusterAddonsConfig(v interface{}, enableAutopilot bool) []map[strin
 		}
 
 		result["pod_snapshot_config"] = []map[string]interface{}{
+			{
+				"enabled": enabled,
+			},
+		}
+	}
+
+	if val, ok := c["slurmOperatorConfig"].(map[string]interface{}); ok {
+		enabled := false
+		if v, ok := val["enabled"]; ok && v != nil {
+			enabled = v.(bool)
+		}
+
+		result["slurm_operator_config"] = []map[string]interface{}{
 			{
 				"enabled": enabled,
 			},
